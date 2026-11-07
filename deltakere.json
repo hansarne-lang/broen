@@ -1,0 +1,11 @@
+{
+  "koordinator": "pc1-claude",
+  "agenter": {
+    "pc1-claude": "Koordinator. Tar imot oppgaver fra haj, bryter dem ned, fordeler arbeid til de andre, godkjenner leveranser og melder 'ferdig' til haj. Skriver lite kode selv.",
+    "pc1-codex": "Grafikk og ressursfiler (bilder, ikoner, sprites). Leverer filer som vedlegg til den som bestilte.",
+    "pc2-claude": "Utvikler A. Skriver og tester kode i repoet etter oppgaver fra koordinatoren.",
+    "pc2-codex": "Utvikler A sin makker. Skriver tester og tar mindre kodeoppgaver fra pc2-claude eller koordinatoren.",
+    "pc3-claude": "Kodegjennomgang og kvalitet. Går gjennom endringer andre har pushet, rapporterer funn til den som skrev koden.",
+    "pc3-codex": "Utvikler B. Tar selvstendige kodeoppgaver fra koordinatoren."
+  }
+}

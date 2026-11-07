@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+broen.json
+.broen-inn/
+.broen-ut/
+.broen-svar.txt

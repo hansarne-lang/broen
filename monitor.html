@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broen – overvåkning</title>
+<style>
+  :root{--bg:#f5f4f0;--panel:#fff;--tekst:#1d1d1b;--dempet:#6b6a65;--linje:#e3e1da;--aksent:#2f5d8a;
+        --rod:#b3261e;--gul:#a26b00;--gronn:#2e7d32;--haj:#eef3f8}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tekst)}
+  header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--linje);flex-wrap:wrap}
+  header h1{font-size:17px;margin:0 8px 0 0}
+  .chip{font-size:12px;padding:3px 8px;border-radius:999px;background:#eceae4;white-space:nowrap}
+  .chip.arbeider{background:#fff1d6;color:var(--gul)} .chip.feil{background:#fde2e0;color:var(--rod)}
+  .chip.stoppet{background:#fde2e0;color:var(--rod)} .chip.gammel{opacity:.5}
+  .spacer{flex:1}
+  button{font:inherit;padding:6px 12px;border-radius:6px;border:1px solid var(--linje);background:var(--panel);cursor:pointer}
+  button:hover{border-color:#bbb}
+  button.primar{background:var(--aksent);color:#fff;border-color:var(--aksent)}
+  button.fare{background:var(--rod);color:#fff;border-color:var(--rod)}
+  button.liten{padding:3px 8px;font-size:12px}
+  main{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 53px)}
+  nav{border-right:1px solid var(--linje);overflow:auto;background:var(--panel)}
+  nav .knapp{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--linje);cursor:pointer}
+  nav .knapp:hover,nav .valgt{background:#f0eee8}
+  .tall{background:var(--rod);color:#fff;border-radius:999px;padding:0 7px;font-size:12px;min-width:20px;text-align:center}
+  .tall.null{background:#ddd;color:#666}
+  .traad .navn{font-weight:600}
+  .traad .meta{font-size:12px;color:var(--dempet)}
+  section{overflow:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+  .topp{display:flex;align-items:center;gap:10px}
+  .topp h2{margin:0;font-size:16px}
+  .melding{background:var(--panel);border:1px solid var(--linje);border-radius:8px;padding:10px 12px}
+  .melding.fra-haj{background:var(--haj)}
+  .melding.holdt{border-color:var(--gul);border-width:2px}
+  .melding.tilhaj{border-color:var(--aksent);border-width:2px}
+  .melding .hode{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--dempet);margin-bottom:6px;flex-wrap:wrap}
+  .melding .hode b{color:var(--tekst);font-size:13px}
+  .type{padding:1px 7px;border-radius:4px;background:#eceae4;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  .type.ferdig{background:#dcefdc;color:var(--gronn)} .type.spørsmål{background:#e3ecf6;color:var(--aksent)}
+  .merke{font-size:11px;padding:1px 6px;border-radius:4px;background:#fff1d6;color:var(--gul)}
+  .tekst{white-space:pre-wrap;word-wrap:break-word}
+  .vedlegg a{margin-right:10px;font-size:12px}
+  textarea{width:100%;min-height:90px;font:inherit;padding:8px;border:1px solid var(--linje);border-radius:6px;resize:vertical}
+  select,input[type=text]{font:inherit;padding:5px 8px;border:1px solid var(--linje);border-radius:6px}
+  .rad{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+  .skriv{position:sticky;bottom:0;background:var(--bg);padding-top:8px;border-top:1px solid var(--linje)}
+  .tom{color:var(--dempet);padding:30px 0;text-align:center}
+  .helseknapp{display:flex;align-items:center;gap:6px}
+  .prikk{width:11px;height:11px;border-radius:50%;background:#bbb;display:inline-block}
+  .prikk.ok{background:var(--gronn)} .prikk.gul{background:#e0a100} .prikk.rod{background:var(--rod)}
+  .dom{font-size:20px;font-weight:700;padding:14px 16px;border-radius:8px;display:flex;align-items:center;gap:12px}
+  .dom.ok{background:#e3f2e3;color:var(--gronn)} .dom.gul{background:#fff4d6;color:var(--gul)} .dom.rod{background:#fde2e0;color:var(--rod)}
+  .kort{background:var(--panel);border:1px solid var(--linje);border-radius:8px;padding:10px 12px}
+  .kort h3{margin:0 0 6px;font-size:14px;display:flex;align-items:center;gap:8px}
+  .punkt{display:flex;gap:8px;font-size:13px;padding:2px 0}
+  .punkt .ikon{width:16px;text-align:center}
+  .punkt.ok{color:var(--dempet)} .punkt.gul{color:var(--gul)} .punkt.rod{color:var(--rod);font-weight:600}
+  .rutenett{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+  .banner{background:var(--rod);color:#fff;padding:8px 16px;font-weight:600}
+</style>
+</head>
+<body>
+<div id="banner"></div>
+<header>
+  <h1>Broen</h1>
+  <div id="agenter" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  <div class="spacer"></div>
+  <button class="helseknapp" onclick="vis('helse')"><span class="prikk" id="helseprikk"></span>Er alle grønne?</button>
+  <button id="stoppknapp" class="fare" onclick="vekslStopp()">STOPP alt</button>
+</header>
+<main>
+  <nav>
+    <div class="knapp" data-vis="tilhaj" onclick="vis('tilhaj')"><span>📥 Til deg</span><span class="tall" id="n-tilhaj">0</span></div>
+    <div class="knapp" data-vis="holdt" onclick="vis('holdt')"><span>✋ Holdt tilbake</span><span class="tall" id="n-holdt">0</span></div>
+    <div class="knapp" data-vis="ny" onclick="vis('ny')"><span>＋ Ny tråd</span></div>
+    <div id="traader"></div>
+  </nav>
+  <section id="innhold"><div class="tom">Velg en tråd</div></section>
+</main>
+<script>
+let token = localStorage.getItem('broen_token') || '';
+let O = null, visning = 'tilhaj', valgtTraad = null, sistTraadJSON = '';
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kl = t => t ? t.replace('T', ' ').slice(5, 16) : '';
+
+async function api(sti, data) {
+  const r = await fetch(sti, data === undefined ? {headers:{'X-Token':token}} :
+    {method:'POST', headers:{'Content-Type':'application/json','X-Token':token}, body:JSON.stringify(data)});
+  if (r.status === 401) { token = prompt('Token for Broen-monitor:') || ''; localStorage.setItem('broen_token', token); return api(sti, data); }
+  const j = await r.json();
+  if (j.feil) { alert(j.feil); throw new Error(j.feil); }
+  return j;
+}
+
+function deltakerValg(valgt) {
+  const navn = Object.keys(O?.deltakere?.agenter || {});
+  return navn.map(n => `<option ${n===valgt?'selected':''}>${esc(n)}</option>`).join('') +
+         `<option value="haj" ${valgt==='haj'?'selected':''}>haj</option>`;
+}
+const typeValg = v => ['oppgave','svar','spørsmål','ferdig'].map(t => `<option ${t===v?'selected':''}>${t}</option>`).join('');
+
+function meldingHTML(m, modus) {
+  const holdtFil = modus === 'holdt' ? m._fil : (O.holdt.find(h => h.id === m.id) || {})._fil;
+  const tilHajFil = (O.til_haj.find(h => h.id === m.id) || {})._fil;
+  const kl_ = ['melding']; if (m.fra === 'haj') kl_.push('fra-haj'); if (holdtFil) kl_.push('holdt'); if (tilHajFil) kl_.push('tilhaj');
+  const ved = (m.vedlegg || []).map(v => `<a href="/vedlegg/${encodeURIComponent(m.traad)}/${encodeURIComponent(v)}?token=${encodeURIComponent(token)}" target="_blank">📎 ${esc(v)}</a>`).join('');
+  let h = `<div class="${kl_.join(' ')}"><div class="hode"><b>${esc(m.fra)} → ${esc(m.til)}</b>
+    <span class="type ${esc(m.type)}">${esc(m.type)}</span><span>runde ${esc(m.runde)}</span><span>${kl(m.tid)}</span>
+    ${modus !== 'traad' ? `<a href="#" onclick="aapneTraad('${esc(m.traad)}');return false">tråd: ${esc(m.traad)}</a>` : ''}
+    ${m.holdt ? `<span class="merke">${holdtFil ? 'holdt: ' : ''}${esc(m.holdt)}</span>` : ''}
+    ${m.redigert ? `<span class="merke">redigert</span>` : ''}</div>`;
+  if (holdtFil) {
+    h += `<textarea id="red-${esc(holdtFil)}">${esc(m.tekst)}</textarea>
+      <div class="rad">Til: <select id="til-${esc(holdtFil)}">${deltakerValg(m.til)}</select>
+      <button class="primar liten" onclick="slipp('${esc(holdtFil)}')">Slipp videre</button>
+      <button class="liten" onclick="slett('${esc(holdtFil)}')">Slett</button></div>`;
+  } else {
+    h += `<div class="tekst">${esc(m.tekst)}</div>`;
+  }
+  if (ved) h += `<div class="vedlegg rad">${ved}</div>`;
+  if (tilHajFil) h += `<div class="rad"><button class="liten primar" onclick="svarPaa('${esc(m.traad)}','${esc(m.fra)}')">Svar</button>
+      <button class="liten" onclick="lest('${esc(tilHajFil)}')">Marker som lest</button></div>`;
+  return h + '</div>';
+}
+
+function skrivBoks(traad, til) {
+  return `<div class="skriv"><textarea id="skriv-tekst" placeholder="Skriv til en agent i denne tråden – korriger, gi ny retning eller svar…"></textarea>
+    <div class="rad">Til: <select id="skriv-til">${deltakerValg(til || O?.deltakere?.koordinator)}</select>
+    Type: <select id="skriv-type">${typeValg('oppgave')}</select>
+    <button class="primar" onclick="send('${esc(traad)}')">Send</button>
+    <span style="color:var(--dempet);font-size:12px">Din melding nullstiller rundetelleren.</span></div></div>`;
+}
+
+function tegnMeny() {
+  document.getElementById('banner').innerHTML = O.stopp ? '<div class="banner">STOPP er aktiv – ingen meldinger leveres til agentene.</div>' : '';
+  const sb = document.getElementById('stoppknapp');
+  sb.textContent = O.stopp ? 'Start igjen' : 'STOPP alt'; sb.className = O.stopp ? 'primar' : 'fare';
+  const naa = Date.now();
+  document.getElementById('agenter').innerHTML = O.agenter.map(a => {
+    const gammel = naa - new Date(a.puls || a.tid).getTime() > 60000;
+    return `<span class="chip ${esc(a.tilstand)} ${gammel?'gammel':''}" title="sist sett ${kl(a.puls || a.tid)}">${esc(a.agent)}: ${esc(gammel?'frakoblet?':a.tilstand)}${a.traad?' · '+esc(a.traad):''}</span>`;
+  }).join('');
+  const hp = document.getElementById('helseprikk'); hp.className = 'prikk ' + (O.helse?.niva || '');
+  hp.title = {ok:'Alle grønne', gul:'Grønt, men med merknader', rod:'Noe er rødt'}[O.helse?.niva] || '';
+  for (const [id, n] of [['n-tilhaj', O.til_haj.length], ['n-holdt', O.holdt.length]]) {
+    const e = document.getElementById(id); e.textContent = n; e.className = 'tall' + (n ? '' : ' null');
+  }
+  document.querySelectorAll('nav .knapp').forEach(k => k.classList.toggle('valgt', k.dataset.vis === visning));
+  document.getElementById('traader').innerHTML = O.traader.map(t => `
+    <div class="knapp traad ${visning==='traad'&&valgtTraad===t.id?'valgt':''}" onclick="aapneTraad('${esc(t.id)}')">
+      <div><div class="navn">${t.pause?'⏸ ':''}${esc(t.id)}</div>
+      <div class="meta">${t.antall} meldinger · ${esc(t.sist_fra)} · ${kl(t.sist)}</div></div>
+      <div>${t.til_haj?`<span class="tall">${t.til_haj}</span>`:''} ${t.holdt?`<span class="tall" style="background:var(--gul)">${t.holdt}</span>`:''}</div>
+    </div>`).join('') || '<div class="tom">Ingen tråder ennå</div>';
+}
+
+const opptatt = () => { const a = document.activeElement; return a && (a.tagName === 'TEXTAREA' || a.tagName === 'SELECT' || a.tagName === 'INPUT') && a.value; };
+
+async function tegnInnhold(tving) {
+  const el = document.getElementById('innhold');
+  if (!tving && opptatt()) return;
+  if (visning === 'tilhaj') {
+    el.innerHTML = `<div class="topp"><h2>Til deg</h2></div>` +
+      (O.til_haj.map(m => meldingHTML(m, 'tilhaj')).join('') || '<div class="tom">Ingenting venter på deg 🎉</div>');
+  } else if (visning === 'holdt') {
+    el.innerHTML = `<div class="topp"><h2>Holdt tilbake</h2><span style="color:var(--dempet)">Rediger og slipp videre, eller slett.</span></div>` +
+      (O.holdt.map(m => meldingHTML(m, 'holdt')).join('') || '<div class="tom">Ingen meldinger holdt tilbake</div>');
+  } else if (visning === 'helse') {
+    const H = O.helse, ikon = {ok:'✓', gul:'!', rod:'✗'};
+    const dom = {ok:'Ja – alle er grønne', gul:'Alle kjører, men noe trenger oppmerksomhet', rod:'Nei – noe er rødt'}[H.niva];
+    const punkter = l => l.map(p => `<div class="punkt ${p.niva}"><span class="ikon">${ikon[p.niva]}</span><span>${esc(p.tekst)}</span></div>`).join('');
+    el.innerHTML = `<div class="topp"><h2>Helsesjekk</h2><span style="color:var(--dempet)">oppdatert ${kl(H.tid)}</span><div class="spacer"></div>
+        <button onclick="ping('alle')" title="Hver agent blir startet og må svare PONG. Bruker litt kvote.">Dyp sjekk av alle</button></div>
+      <div class="dom ${H.niva}"><span class="prikk ${H.niva}" style="width:18px;height:18px"></span>${dom}</div>
+      ${H.globalt.length ? `<div class="kort"><h3>Felles</h3>${punkter(H.globalt)}</div>` : ''}
+      <div class="rutenett">${H.agenter.map(a => `<div class="kort"><h3><span class="prikk ${a.niva}"></span>${esc(a.agent)}
+          <span style="font-weight:400;color:var(--dempet);font-size:12px">${esc(a.tilstand)}</span><div class="spacer"></div>
+          <button class="liten" onclick="ping('${esc(a.agent)}')">Dyp sjekk</button></h3>${punkter(a.punkter)}</div>`).join('')}</div>
+      <div style="color:var(--dempet);font-size:12px">Rask sjekk kjøres automatisk (puls hvert 15. s, selvsjekk hvert 5. min) og er gratis.
+        Dyp sjekk starter agenten med en ekte forespørsel og bekrefter at innlogging og kvote virker.</div>`;
+  } else if (visning === 'ny') {
+    if (!tving) return;
+    el.innerHTML = `<div class="topp"><h2>Ny tråd</h2></div>
+      <div class="rad">Navn på tråden: <input type="text" id="ny-navn" placeholder="f.eks. login-modul" style="flex:1"></div>
+      <label class="rad"><input type="checkbox" id="ny-pause"> Start på pause (alle agentmeldinger må godkjennes av deg)</label>
+      ${skrivBoks('__ny__')}`;
+  } else if (visning === 'traad') {
+    const t = await api('/api/traad?id=' + encodeURIComponent(valgtTraad));
+    const j = JSON.stringify([t, O.holdt.map(h => h.id), O.til_haj.map(h => h.id)]);
+    if (!tving && j === sistTraadJSON) return;
+    sistTraadJSON = j;
+    const tekst = document.getElementById('skriv-tekst')?.value || '';
+    el.innerHTML = `<div class="topp"><h2>${esc(t.id)}</h2>
+      <label><input type="checkbox" ${t.status.pause?'checked':''} onchange="pause('${esc(t.id)}', this.checked)"> Pause (hold alle agentmeldinger til jeg godkjenner)</label></div>` +
+      (t.meldinger.map(m => meldingHTML(m, 'traad')).join('') || '<div class="tom">Tom tråd</div>') + skrivBoks(t.id);
+    document.getElementById('skriv-tekst').value = tekst;
+    if (tving) el.scrollTop = el.scrollHeight;
+  }
+}
+
+async function oppdater(tving) {
+  try { O = await api('/api/oversikt'); tegnMeny(); await tegnInnhold(tving); } catch (e) { console.log(e); }
+}
+function vis(v) { visning = v; valgtTraad = null; sistTraadJSON = ''; tegnMeny(); tegnInnhold(true); }
+function aapneTraad(id) { visning = 'traad'; valgtTraad = id; sistTraadJSON = ''; tegnMeny(); tegnInnhold(true); }
+
+async function send(traad) {
+  const tekst = document.getElementById('skriv-tekst').value.trim(); if (!tekst) return;
+  if (traad === '__ny__') {
+    traad = document.getElementById('ny-navn').value.trim(); if (!traad) return alert('Gi tråden et navn');
+    if (document.getElementById('ny-pause').checked) await api('/api/pause', {traad, paa:true});
+  }
+  const r = await api('/api/send', {traad, til:document.getElementById('skriv-til').value, type:document.getElementById('skriv-type').value, tekst});
+  document.getElementById('skriv-tekst').value = '';
+  await oppdater(); aapneTraad(r.traad);
+}
+async function slipp(fil) {
+  await api('/api/slipp', {fil, tekst:document.getElementById('red-' + fil).value, til:document.getElementById('til-' + fil).value});
+  document.activeElement?.blur(); sistTraadJSON = ''; oppdater(true);
+}
+async function slett(fil) { if (confirm('Slette meldingen? Den blir ikke levert.')) { await api('/api/slett', {fil}); sistTraadJSON=''; oppdater(true); } }
+async function lest(fil) { await api('/api/lest', {fil}); sistTraadJSON=''; oppdater(true); }
+async function pause(traad, paa) { await api('/api/pause', {traad, paa}); oppdater(true); }
+async function ping(agent) { await api('/api/ping', {agent}); oppdater(true); }
+async function vekslStopp() { await api('/api/stopp', {paa: !O.stopp}); oppdater(true); }
+function svarPaa(traad, til) {
+  aapneTraad(traad);
+  setTimeout(() => { const s = document.getElementById('skriv-til'); if (s) { s.value = til; document.getElementById('skriv-type').value = 'svar'; document.getElementById('skriv-tekst').focus(); } }, 300);
+}
+
+oppdater(true);
+setInterval(() => oppdater(false), 3000);
+</script>
+</body>
+</html>

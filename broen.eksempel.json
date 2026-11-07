@@ -1,0 +1,14 @@
+{
+  "rot": "\\\\NAS-PC\\broen",
+  "pc": "pc1",
+  "agenter": {
+    "pc1-claude": { "type": "claude", "repo": "C:\\prosjekter\\minapp" },
+    "pc1-codex":  { "type": "codex",  "repo": "C:\\prosjekter\\minapp" }
+  },
+  "maks_runder": 20,
+  "poll_sekunder": 5,
+  "tidsavbrudd_sekunder": 1800,
+  "historikk_meldinger": 30,
+  "monitor_port": 8765,
+  "monitor_token": ""
+}
