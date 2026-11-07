@@ -65,7 +65,7 @@ if (-not (Har 'claude')) { Adv "Installerer Claude Code..."; npm install -g @ant
 if (-not (Har 'codex'))  { Adv "Installerer Codex CLI...";  npm install -g @openai/codex }
 $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 foreach ($c in 'claude', 'codex') {
-    if (Har $c) { OK "$c $((& $c --version 2>$null) | Select-Object -Last 1)" } else { Feil "$c ble ikke funnet etter installasjon" ; return }
+    if (Har $c) { OK "$c $((cmd /c "$c --version" 2>$null) | Select-Object -Last 1)" } else { Feil "$c ble ikke funnet etter installasjon" ; return }
 }
 
 # ---------------------------------------------------------------- 3. Broen-koden
@@ -81,7 +81,7 @@ if ($Rot -match '^(\\\\[^\\]+\\[^\\]+)' -and -not (Test-Path $Rot)) {
     net use $del /persistent:yes
 }
 try {
-    New-Item -ItemType Directory -Force -Path $Rot -ErrorAction Stop | Out-Null
+    if (-not (Test-Path $Rot)) { New-Item -ItemType Directory -Force -Path $Rot -ErrorAction Stop | Out-Null }
     $test = Join-Path $Rot ".skrivetest-$Pc"; Set-Content $test 'ok' -ErrorAction Stop; Remove-Item $test -ErrorAction Stop
     OK "$Rot er skrivbar"
 } catch {
@@ -164,8 +164,8 @@ Write-Host "    Begge verktoyene maa vaere logget inn for at agentene skal kunne
 Write-Host "    Jeg aapner to vinduer. Logg inn i begge, og lukk dem naar du er ferdig:"
 Write-Host "      - Claude: godta mappen ($Repo) og logg inn, skriv /exit naar du er inne"
 Write-Host "      - Codex:  'codex login'"
-Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'claude'
-Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'codex login'
+Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'claude.cmd; if (-not $?) { claude }'
+Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'codex.cmd login'
 Read-Host "    Trykk Enter her naar du er logget inn i begge"
 }
 
