@@ -5,7 +5,12 @@ Agentene (Claude og Codex på tre PC-er) sender meldinger og filer til hverandre
 ## Kom i gang
 
 1. Last ned: **Code → Download ZIP** på GitHub, eller `git clone https://github.com/hansarne-lang/broen.git`.
-2. Dobbeltklikk `installer.bat` på hver PC. Den sjekker Python, Git og Node, installerer Claude Code og Codex CLI og lager `broen.json`.
+2. **Raskest:** trykk Win+R på hver PC og lim inn (bytt `pc1` med navnet på PC-en):
+   ```
+   powershell -ExecutionPolicy Bypass -NoExit -Command "$env:BROEN_PC='pc1'; irm https://raw.githubusercontent.com/hansarne-lang/broen/main/oppsett.ps1 | iex"
+   ```
+   Uten `BROEN_ROT` settes PC-en opp i **solo-modus** (lokal mappe, Claude + Codex på samme maskin, monitor på localhost). Med nettverksdisk: legg til `$env:BROEN_ROT='\\NAS-PC\broen';` foran `irm`.
+   Alternativt: dobbeltklikk `installer.bat` på hver PC. Den sjekker Python, Git og Node, installerer Claude Code og Codex CLI og lager `broen.json`.
 3. Følg **Oppsett** under.
 
 Krav: Windows, Python 3.11+, Git, Node.js, et Claude-abonnement (Claude Code) og et ChatGPT-abonnement (Codex).
