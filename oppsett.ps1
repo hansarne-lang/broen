@@ -61,8 +61,8 @@ if ($mangler) {
 
 # ---------------------------------------------------------------- 2. claude og codex
 Steg "2/7 Sjekker Claude Code og Codex CLI"
-if (-not (Har 'claude')) { Adv "Installerer Claude Code..."; npm install -g @anthropic-ai/claude-code }
-if (-not (Har 'codex'))  { Adv "Installerer Codex CLI...";  npm install -g @openai/codex }
+if (-not (Har 'claude')) { Adv "Installerer Claude Code..."; npm.cmd install -g @anthropic-ai/claude-code }
+if (-not (Har 'codex'))  { Adv "Installerer Codex CLI...";  npm.cmd install -g @openai/codex }
 $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 foreach ($c in 'claude', 'codex') {
     if (Har $c) { OK "$c $((cmd /c "$c --version" 2>$null) | Select-Object -Last 1)" } else { Feil "$c ble ikke funnet etter installasjon" ; return }
