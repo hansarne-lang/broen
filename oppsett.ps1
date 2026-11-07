@@ -109,10 +109,23 @@ Steg "5/7 Kode-repo for agentene"
 $GitUrl = $env:BROEN_GIT
 if (-not $GitUrl) {
     $bare = Join-Path $Rot 'git\prosjekt.git'
+    # Git paa Windows nekter repoer paa nettverksdisk eid av en annen bruker ("dubious ownership").
+    # Godkjenn KUN dette ene repoet.
+    if ($bare.StartsWith('\\')) {
+        $sdPath = '%(prefix)/' + ($bare -replace '\\', '/')
+        if (@(git config --global --get-all safe.directory) -notcontains $sdPath) {
+            git config --global --add safe.directory $sdPath
+            OK "Godkjente $bare for git (safe.directory)"
+        }
+    }
     if (-not (Test-Path $bare) -and (Test-Path (Join-Path $Repo '.git'))) {
         git init --quiet --bare --initial-branch=main $bare
-        git -C $Repo push --quiet $bare HEAD:refs/heads/main
-        OK "Flyttet eksisterende prosjekt til $bare"
+        git -C $Repo push $bare HEAD:refs/heads/main
+        if ($LASTEXITCODE -eq 0) { OK "Flyttet eksisterende prosjekt til $bare" } else { Feil "Klarte ikke aa flytte prosjektet til $bare (se feilen over)" }
+    }
+    if ((Test-Path $bare) -and (Test-Path (Join-Path $Repo '.git')) -and -not (git --git-dir=$bare rev-parse --verify --quiet main)) {
+        git -C $Repo push $bare HEAD:refs/heads/main
+        if ($LASTEXITCODE -eq 0) { OK "Fylte det tomme repoet $bare fra $Repo" } else { Feil "Klarte ikke aa fylle $bare (se feilen over)" }
     }
     if (-not (Test-Path $bare)) {
         git init --quiet --bare --initial-branch=main $bare
