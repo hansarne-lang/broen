@@ -30,6 +30,12 @@ Krav: Windows, Python 3.11+, Git, Node.js, et Claude-abonnement (Claude Code) og
 ## Oppsett
 
 **1. NAS-PC-en (den med Proton VPN)**
+
+Raskest: Win+R, lim inn, og trykk **Ctrl+Shift+Enter** (kjører som administrator):
+```
+powershell -ExecutionPolicy Bypass -NoExit -Command "irm https://raw.githubusercontent.com/hansarne-lang/broen/main/nas-oppsett.ps1 | iex"
+```
+Skriptet lager og deler `C:\broen`, åpner brannmuren for fildeling og skriver ut adressen de andre PC-ene skal bruke. Manuelt:
 1. Lag mappen `broen` og del den på nettverket med lese- og skrivetilgang for brukerne på de tre PC-ene.
 2. Slå på LAN-tilgang i Proton VPN (innstillingen for å tillate LAN-tilkoblinger) og gi PC-en fast IP.
 3. Test fra en annen PC: `dir \\NAS-PC\broen`, både med VPN-en på og av.

@@ -75,6 +75,11 @@ else { git clone --quiet https://github.com/hansarne-lang/broen $Kode; OK "Klone
 
 # ---------------------------------------------------------------- 4. rot / nettverksdisk
 Steg "4/7 Sjekker rot-mappen"
+if ($Rot -match '^(\\\\[^\\]+\\[^\\]+)' -and -not (Test-Path $Rot)) {
+    $del = $Matches[1]
+    Adv "Faar ikke tilgang til $del - logger paa (bruk brukernavn og passord fra NAS-PC-en)"
+    net use $del /persistent:yes
+}
 try {
     New-Item -ItemType Directory -Force -Path $Rot -ErrorAction Stop | Out-Null
     $test = Join-Path $Rot ".skrivetest-$Pc"; Set-Content $test 'ok' -ErrorAction Stop; Remove-Item $test -ErrorAction Stop
@@ -104,6 +109,11 @@ Steg "5/7 Kode-repo for agentene"
 $GitUrl = $env:BROEN_GIT
 if (-not $GitUrl) {
     $bare = Join-Path $Rot 'git\prosjekt.git'
+    if (-not (Test-Path $bare) -and (Test-Path (Join-Path $Repo '.git'))) {
+        git init --quiet --bare --initial-branch=main $bare
+        git -C $Repo push --quiet $bare HEAD:refs/heads/main
+        OK "Flyttet eksisterende prosjekt til $bare"
+    }
     if (-not (Test-Path $bare)) {
         git init --quiet --bare --initial-branch=main $bare
         $tmp = Join-Path $env:TEMP "broen-init-$(Get-Random)"
@@ -118,7 +128,12 @@ if (-not $GitUrl) {
     }
     $GitUrl = $bare
 }
-if (-not (Test-Path (Join-Path $Repo '.git'))) { git clone --quiet $GitUrl $Repo; OK "Klonet til $Repo" } else { OK "$Repo finnes" }
+if (-not (Test-Path (Join-Path $Repo '.git'))) { git clone --quiet $GitUrl $Repo; OK "Klonet til $Repo" }
+else {
+    $naa = git -C $Repo remote get-url origin 2>$null
+    if ($naa -ne $GitUrl) { git -C $Repo remote set-url origin $GitUrl; git -C $Repo fetch --quiet origin; git -C $Repo branch --quiet -u origin/main 2>$null; OK "Pekte $Repo om til $GitUrl" }
+    else { OK "$Repo finnes" }
+}
 $gi = Join-Path $Repo '.gitignore'
 $innhold = if (Test-Path $gi) { Get-Content $gi -Raw } else { '' }
 foreach ($l in '.broen-inn/', '.broen-ut/', '.broen-svar.txt') { if ($innhold -notmatch [regex]::Escape($l)) { Add-Content $gi $l } }
@@ -142,6 +157,9 @@ OK (Join-Path $Kode 'broen.json')
 
 # ---------------------------------------------------------------- 7. innlogging og start
 Steg "7/7 Innlogging og start"
+$svar = Read-Host "    Er claude og codex allerede logget inn paa denne PC-en? [j/N]"
+$loggetInn = $svar -match '^[jJyY]'
+if (-not $loggetInn) {
 Write-Host "    Begge verktoyene maa vaere logget inn for at agentene skal kunne jobbe."
 Write-Host "    Jeg aapner to vinduer. Logg inn i begge, og lukk dem naar du er ferdig:"
 Write-Host "      - Claude: godta mappen ($Repo) og logg inn, skriv /exit naar du er inne"
@@ -149,6 +167,7 @@ Write-Host "      - Codex:  'codex login'"
 Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'claude'
 Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'codex login'
 Read-Host "    Trykk Enter her naar du er logget inn i begge"
+}
 
 $pyArg = ($py | Select-Object -Skip 1) -join ' '
 if ($Monitor) {
