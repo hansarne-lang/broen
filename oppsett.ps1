@@ -164,7 +164,7 @@ Write-Host "    Begge verktoyene maa vaere logget inn for at agentene skal kunne
 Write-Host "    Jeg aapner to vinduer. Logg inn i begge, og lukk dem naar du er ferdig:"
 Write-Host "      - Claude: godta mappen ($Repo) og logg inn, skriv /exit naar du er inne"
 Write-Host "      - Codex:  'codex login'"
-Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'claude.cmd; if (-not $?) { claude }'
+Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'claude'
 Start-Process powershell -WorkingDirectory $Repo -ArgumentList '-NoExit', '-Command', 'codex.cmd login'
 Read-Host "    Trykk Enter her naar du er logget inn i begge"
 }
