@@ -88,5 +88,5 @@ Svaret finnes også som JSON på `GET /api/helse`, med feltet `alle_gronne: true
 ## Tilpasning
 
 - **Tillatelser:** Claude får som standard lese, redigere og skrive filer og kjøre `git`. Vil du gi flere rettigheter, legger du inn `"kommando": [...]` på agenten i `broen.json`. `"kommandoer": {"claude": [...]}` gjelder alle agentene av den typen. `{svarfil}` byttes ut med en midlertidig fil.
-- **Codex** kjører med `--full-auto`, som betyr at den kan skrive i repoet, men ikke utenfor. Derfor kopierer vaktmesteren vedlegg inn og ut via `.broen-inn` og `.broen-ut`.
+- **Codex** kjører med `-a never exec -s workspace-write`, som betyr at den kan skrive i repoet uten å spørre, men ikke utenfor. Derfor kopierer vaktmesteren vedlegg inn og ut via `.broen-inn` og `.broen-ut`.
 - **Kjør vaktmesteren ved oppstart:** Legg en snarvei til `start-vaktmester.bat` i `shell:startup`.

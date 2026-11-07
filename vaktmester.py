@@ -20,8 +20,9 @@ STANDARD_KOMMANDOER = {
     # Prompten sendes inn på stdin. {svarfil} byttes ut med en midlertidig fil.
     "claude": ["claude", "-p", "--output-format", "text", "--permission-mode", "acceptEdits",
                "--allowedTools", "Read,Edit,Write,Glob,Grep,Bash(git:*)"],
-    "codex": ["codex", "exec", "--full-auto", "--skip-git-repo-check",
-              "--output-last-message", "{svarfil}", "-"],
+    # --full-auto er fjernet i nyere Codex (0.149+): sandbox og godkjenning settes hver for seg
+    "codex": ["codex", "-a", "never", "exec", "-s", "workspace-write", "--skip-git-repo-check",
+              "-o", "{svarfil}", "-"],
 }
 
 BLOKK = re.compile(r"===MELDING===\s*\n(.*?)\n\s*===SLUTT===", re.S)
