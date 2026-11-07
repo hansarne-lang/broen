@@ -5,10 +5,11 @@ Agentene (Claude og Codex på tre PC-er) sender meldinger og filer til hverandre
 ## Kom i gang
 
 1. Last ned: **Code → Download ZIP** på GitHub, eller `git clone https://github.com/hansarne-lang/broen.git`.
-2. **Raskest:** trykk Win+R på hver PC og lim inn (bytt `pc1` med navnet på PC-en):
+2. **Raskest:** åpne PowerShell (Win+R → `powershell`) på hver PC og lim inn (bytt `pc1` med navnet på PC-en):
    ```
-   powershell -ExecutionPolicy Bypass -NoExit -Command "$env:BROEN_PC='pc1'; irm https://raw.githubusercontent.com/hansarne-lang/broen/main/oppsett.ps1 | iex"
+   $env:BROEN_PC='pc1'; irm https://raw.githubusercontent.com/hansarne-lang/broen/main/oppsett.ps1 | iex
    ```
+   (Lim inn i PowerShell, ikke i Win+R: Kjør-dialogen avviser lange linjer.)
    Uten `BROEN_ROT` settes PC-en opp i **solo-modus** (lokal mappe, Claude + Codex på samme maskin, monitor på localhost). Med nettverksdisk: legg til `$env:BROEN_ROT='\\NAS-PC\broen';` foran `irm`.
    Alternativt: dobbeltklikk `installer.bat` på hver PC. Den sjekker Python, Git og Node, installerer Claude Code og Codex CLI og lager `broen.json`.
 3. Følg **Oppsett** under.
@@ -31,10 +32,11 @@ Krav: Windows, Python 3.11+, Git, Node.js, et Claude-abonnement (Claude Code) og
 
 **1. NAS-PC-en (den med Proton VPN)**
 
-Raskest: Win+R, lim inn, og trykk **Ctrl+Shift+Enter** (kjører som administrator):
+Raskest: Win+X → **Terminal (administrator)**, og lim inn:
 ```
-powershell -ExecutionPolicy Bypass -NoExit -Command "irm https://raw.githubusercontent.com/hansarne-lang/broen/main/nas-oppsett.ps1 | iex"
+$env:BROEN_NAS_MAPPE='D:\Broen'; irm https://raw.githubusercontent.com/hansarne-lang/broen/main/nas-oppsett.ps1 | iex
 ```
+(Dropp `BROEN_NAS_MAPPE` for å bruke `C:\broen`.)
 Skriptet lager og deler `C:\broen`, åpner brannmuren for fildeling og skriver ut adressen de andre PC-ene skal bruke. Manuelt:
 1. Lag mappen `broen` og del den på nettverket med lese- og skrivetilgang for brukerne på de tre PC-ene.
 2. Slå på LAN-tilgang i Proton VPN (innstillingen for å tillate LAN-tilkoblinger) og gi PC-en fast IP.
